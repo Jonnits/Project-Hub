@@ -51,6 +51,16 @@ I will start with Add to Dock if I only want it on the desktop. A signed Mac app
 
 Column-to-column drag works, including empty columns. I still want tighter reorder within a column, and drops on headers and gutters to always stick.
 
+### Offline use
+
+I want to use Project Hub with no wifi — on a plane, in a cafe, or anywhere the connection drops. The board should keep rendering and I should still be able to create, edit, drag, and delete issues. Those changes get registered locally and shared with the rest of the team the next time the app is online. I know people will not see each other’s live updates while anyone is offline; that is fine. Catch-up on reconnect is the point.
+
+This pairs with the downloadable Mac app: a local install that still works when the network is gone.
+
+### Multiple user login
+
+Right now there is no login; the board is whoever opened this browser. I want multiple user accounts so people can sign in as themselves, keep their own identity on issues (assignee, activity), and share a project when connected. Offline work still belongs to the signed-in user and syncs under that account when the app is back online.
+
 ### Later, if I keep using this
 
 - Persist somewhere other than one browser profile (file on disk, or a tiny local server) so a Mac app and the web UI share the same board.

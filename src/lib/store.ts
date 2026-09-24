@@ -194,7 +194,7 @@ export const useBoardStore = create<BoardStore>()(
       },
     }),
     {
-      name: "forge-board",
+      name: "project-hub-board",
       version: 2,
       skipHydration: true,
       migrate: (persisted) => {
@@ -215,7 +215,13 @@ export const useBoardStore = create<BoardStore>()(
             removeItem: () => {},
           };
         }
-        return window.localStorage;
+        return {
+          getItem: (name) =>
+            window.localStorage.getItem(name) ??
+            window.localStorage.getItem("forge-board"),
+          setItem: (name, value) => window.localStorage.setItem(name, value),
+          removeItem: (name) => window.localStorage.removeItem(name),
+        };
       }),
       partialize: (state) => ({
         people: state.people,

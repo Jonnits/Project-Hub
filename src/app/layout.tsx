@@ -22,9 +22,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Forge — development kanban",
+  title: "Project Hub — development kanban",
   description:
-    "A Linear-inspired kanban board for tracking development projects, issues, and WIP.",
+    "A kanban board for sharing, organizing, and tracking development work.",
   icons: { icon: "/favicon.svg" },
 };
 
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem("forge-appearance")==="day")document.documentElement.classList.remove("dark")}catch(e){}`,
+            __html: `try{var a=localStorage.getItem("project-hub-appearance")||localStorage.getItem("forge-appearance");if(a==="day")document.documentElement.classList.remove("dark")}catch(e){}`,
           }}
         />
       </head>

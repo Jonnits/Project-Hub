@@ -6,11 +6,14 @@ import { useIsClient } from "@/hooks/use-is-client";
 
 export type Appearance = "day" | "night";
 
-const STORAGE_KEY = "forge-appearance";
+const STORAGE_KEY = "project-hub-appearance";
+const LEGACY_STORAGE_KEY = "forge-appearance";
 
 function readAppearance(): Appearance {
   try {
-    return localStorage.getItem(STORAGE_KEY) === "day" ? "day" : "night";
+    const stored =
+      localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
+    return stored === "day" ? "day" : "night";
   } catch {
     return "night";
   }

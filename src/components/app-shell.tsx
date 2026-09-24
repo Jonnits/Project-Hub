@@ -84,7 +84,7 @@ function SidebarBody({
           <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Box className="size-4" />
           </span>
-          Forge
+          Project Hub
         </Link>
       </div>
       <div className="flex items-center justify-between px-3 pb-2">
@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh bg-background">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-border/80 bg-sidebar md:flex">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-border/80 bg-sidebar md:flex">
         <SidebarBody />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -145,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Button>
           <Link href="/" className="font-heading flex items-center gap-2 text-lg">
             <Box className="size-4" />
-            Forge
+            Project Hub
           </Link>
         </div>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

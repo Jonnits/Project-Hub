@@ -1,6 +1,6 @@
-# Forge
+# Project Hub
 
-I built Forge as a personal development kanban I can run in the browser. I wanted Linear-style issue keys and shortcuts, Trello-style columns I can drag across, and Jira-style WIP limits, without standing up a database or an account.
+I built Project Hub as a personal development kanban I can run in the browser. I wanted Linear-style issue keys and shortcuts, Trello-style columns I can drag across, and Jira-style WIP limits, without standing up a database or an account.
 
 All of the board data lives in this browser (`localStorage`). **Reset demo data** in the sidebar restores the sample workspace (API Platform, Field App, Marketing Site).
 
@@ -26,7 +26,7 @@ npm start -- --port 43127
 - **Story points.** Fibonacci estimates (1, 2, 3, 5, 8, 13). Open issues sum as “pts remaining” in the board header.
 - **Drag and drop.** I can grab a card with the mouse and drop it on another column, including empty columns. Status in the issue sheet still works as a fallback.
 - **Delete.** Deleting an issue asks **Are you sure you want to delete this issue?** before it is removed.
-- **Appearance.** Night is the original dark theme. Day is off-white with navy. The sidebar switch toggles between them. Titles (Forge, Projects, project names, column names, issue titles) use **Playfair Display**.
+- **Appearance.** Night is the original dark theme. Day is off-white with navy. The sidebar switch toggles between them. Titles (Project Hub, Projects, project names, column names, issue titles) use **Playfair Display**.
 
 Everything is local to this browser. Clearing site data clears the board.
 
@@ -38,7 +38,7 @@ Next.js 16 (App Router) and TypeScript, Tailwind v4, shadcn/ui, Zustand with `lo
 
 ### Downloadable on my iMac
 
-Right now Forge is a local web app: `npm run dev` or a production `next start`. I want it to live on the machine like a real app, not a terminal tab.
+Right now Project Hub is a local web app: `npm run dev` or a production `next start`. I want it to live on the machine like a real app, not a terminal tab.
 
 I have not implemented this yet. The realistic options, from lightest to heaviest:
 

@@ -40,7 +40,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   if (!isClient || !ready) {
     return (
       <div className="flex min-h-dvh bg-background">
-        <aside className="hidden w-60 shrink-0 border-r border-border/80 bg-sidebar md:block" />
+        <aside className="hidden w-64 shrink-0 border-r border-border/80 bg-sidebar md:block" />
         <div className="flex-1" />
       </div>
     );

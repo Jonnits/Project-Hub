@@ -1,7 +1,7 @@
 import type { Op } from "@/lib/ops";
 import type { SessionUser, Workspace } from "@/lib/types";
 
-const SESSION_KEY = "project-hub-session";
+export const SESSION_KEY = "project-hub-session";
 
 function cacheKey(userId: string) {
   return `project-hub-cache:${userId}`;

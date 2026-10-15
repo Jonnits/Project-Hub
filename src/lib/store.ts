@@ -144,9 +144,16 @@ export const useBoardStore = create<BoardStore>()((set, get) => {
       }
       flushing = true;
       set({ syncStatus: snapshot.outbox.length ? "syncing" : snapshot.syncStatus });
+      let switchToUser: SessionUser | null = null;
       try {
+        const expectedUserId = snapshot.user.id;
         const ops = get().outbox;
-        const result = ops.length ? await apiSync(ops) : { workspace: await apiWorkspace(), applied: [] };
+        const result = ops.length ? await apiSync(ops) : { ...(await apiWorkspace()), applied: [] };
+        if (result.user.id !== expectedUserId) {
+          switchToUser = result.user;
+          return;
+        }
+        if (get().user?.id !== expectedUserId) return;
         const leftover = get().outbox.filter((op) => !result.applied.includes(op.id));
         let workspace = result.workspace;
         for (const op of leftover) workspace = applyOp(workspace, op);
@@ -158,6 +165,7 @@ export const useBoardStore = create<BoardStore>()((set, get) => {
           lastSyncedAt: new Date().toISOString(),
           error: null,
         };
+        if (next.user?.id !== expectedUserId) return;
         set(next);
         persist(next);
       } catch (error) {
@@ -173,7 +181,10 @@ export const useBoardStore = create<BoardStore>()((set, get) => {
         });
       } finally {
         flushing = false;
-        if (flushAgain) {
+        if (switchToUser) {
+          flushAgain = false;
+          void get().hydrate(switchToUser);
+        } else if (flushAgain) {
           flushAgain = false;
           void get().flush();
         }
@@ -186,11 +197,18 @@ export const useBoardStore = create<BoardStore>()((set, get) => {
         set({ syncStatus: "offline" });
         return;
       }
+      const expectedUserId = get().user?.id;
+      if (!expectedUserId) return;
       try {
         set({ syncStatus: "syncing" });
-        const workspace = await apiWorkspace();
+        const result = await apiWorkspace();
+        if (result.user.id !== expectedUserId) {
+          void get().hydrate(result.user);
+          return;
+        }
+        if (get().user?.id !== expectedUserId) return;
         const leftover = get().outbox;
-        let nextWorkspace = workspace;
+        let nextWorkspace = result.workspace;
         for (const op of leftover) nextWorkspace = applyOp(nextWorkspace, op);
         const next: BoardStore = {
           ...get(),
@@ -199,6 +217,7 @@ export const useBoardStore = create<BoardStore>()((set, get) => {
           lastSyncedAt: new Date().toISOString(),
           error: null,
         };
+        if (next.user?.id !== expectedUserId) return;
         set(next);
         persist(next);
       } catch (error) {

@@ -81,13 +81,16 @@ function CreateIssueForm({
     );
   }
 
-  function handleSubmit(event?: React.FormEvent) {
-    event?.preventDefault();
-    if (!title.trim() || !status) return;
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const nextTitle = String(form.get("title") ?? title).trim();
+    const nextDescription = String(form.get("description") ?? description);
+    if (!nextTitle || !status) return;
     createIssue({
       projectId: project.id,
-      title,
-      description,
+      title: nextTitle,
+      description: nextDescription,
       status,
       priority,
       assigneeId: assigneeId === "unassigned" ? null : assigneeId,
@@ -107,12 +110,14 @@ function CreateIssueForm({
       </DialogHeader>
       <div className="grid gap-3">
         <Input
+          name="title"
           autoFocus
           value={title}
           placeholder="Issue title"
           onChange={(event) => setTitle(event.target.value)}
         />
         <Textarea
+          name="description"
           value={description}
           placeholder="Description (optional)"
           onChange={(event) => setDescription(event.target.value)}
@@ -259,9 +264,7 @@ function CreateIssueForm({
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="button" disabled={!title.trim()} onClick={handleSubmit}>
-          Create issue
-        </Button>
+        <Button type="submit">Create issue</Button>
       </DialogFooter>
     </form>
   );

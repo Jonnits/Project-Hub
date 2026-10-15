@@ -50,28 +50,37 @@ export async function apiMe(): Promise<SessionUser | null> {
   }
 }
 
-export async function apiWorkspace(): Promise<Workspace> {
+export async function apiWorkspace(): Promise<{ user: SessionUser; workspace: Workspace }> {
   const response = await fetch("/api/workspace");
-  const data = await readJson<{ workspace?: Workspace; error?: string }>(response);
+  const data = await readJson<{ user?: SessionUser; workspace?: Workspace; error?: string }>(
+    response
+  );
   if (response.status === 401) throw new Error("unauthorized");
-  if (!response.ok || !data.workspace) throw new Error(data.error ?? "Could not load the workspace.");
-  return data.workspace;
+  if (!response.ok || !data.workspace || !data.user) {
+    throw new Error(data.error ?? "Could not load the workspace.");
+  }
+  return { user: data.user, workspace: data.workspace };
 }
 
-export async function apiSync(ops: Op[]): Promise<{ workspace: Workspace; applied: string[] }> {
+export async function apiSync(
+  ops: Op[]
+): Promise<{ user: SessionUser; workspace: Workspace; applied: string[] }> {
   const response = await fetch("/api/sync", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ops }),
   });
   const data = await readJson<{
+    user?: SessionUser;
     workspace?: Workspace;
     applied?: string[];
     error?: string;
   }>(response);
   if (response.status === 401) throw new Error("unauthorized");
-  if (!response.ok || !data.workspace) throw new Error(data.error ?? "Could not sync.");
-  return { workspace: data.workspace, applied: data.applied ?? [] };
+  if (!response.ok || !data.workspace || !data.user) {
+    throw new Error(data.error ?? "Could not sync.");
+  }
+  return { user: data.user, workspace: data.workspace, applied: data.applied ?? [] };
 }
 
 export async function apiCreateShare(kind: ShareKind, targetId: string): Promise<string> {

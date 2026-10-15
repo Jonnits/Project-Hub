@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { apiMe } from "@/lib/api";
-import { readSession } from "@/lib/cache";
+import { readSession, SESSION_KEY } from "@/lib/cache";
 import { useBoardStore } from "@/lib/store";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -72,16 +72,28 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     const onVisible = () => {
       if (document.visibilityState === "visible") void flush();
     };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== SESSION_KEY) return;
+      const next = readSession();
+      const current = useBoardStore.getState().user;
+      if (!next) {
+        signOutLocal();
+        return;
+      }
+      if (next.id !== current?.id) void hydrate(next);
+    };
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
+    window.addEventListener("storage", onStorage);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       window.clearInterval(timer);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
+      window.removeEventListener("storage", onStorage);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [flush, hydrated, markOffline, pull, user]);
+  }, [flush, hydrate, hydrated, markOffline, pull, signOutLocal, user]);
 
   useEffect(() => {
     if (!checked) return;

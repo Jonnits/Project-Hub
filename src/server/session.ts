@@ -15,7 +15,6 @@ export async function createSession(userId: string) {
   const id = newSessionId();
   const expiresAt = new Date(Date.now() + THIRTY_DAYS_MS).toISOString();
   await withDb((db) => {
-    db.sessions = db.sessions.filter((session) => session.userId !== userId);
     db.sessions.push({ id, userId, expiresAt });
   });
   const jar = await cookies();

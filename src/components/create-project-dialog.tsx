@@ -33,6 +33,7 @@ export function CreateProjectDialog({
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(PROJECT_COLORS[0]);
   const [keyTouched, setKeyTouched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function reset() {
     setName("");
@@ -40,6 +41,7 @@ export function CreateProjectDialog({
     setDescription("");
     setColor(PROJECT_COLORS[0]);
     setKeyTouched(false);
+    setError(null);
   }
 
   function handleOpenChange(next: boolean) {
@@ -47,17 +49,28 @@ export function CreateProjectDialog({
     onOpenChange(next);
   }
 
-  function handleSubmit(event?: React.FormEvent) {
-    event?.preventDefault();
-    if (!name.trim()) return;
-    const id = createProject({
-      name,
-      key: key || keyFromName(name),
-      description,
-      color,
-    });
-    handleOpenChange(false);
-    router.push(`/projects/${id}`);
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const nextName = String(form.get("name") ?? name).trim();
+    const nextKey = String(form.get("key") ?? key).trim().toUpperCase();
+    const nextDescription = String(form.get("description") ?? description);
+    if (!nextName) {
+      setError("Name the project so it can get a board.");
+      return;
+    }
+    try {
+      const id = createProject({
+        name: nextName,
+        key: nextKey || keyFromName(nextName),
+        description: nextDescription,
+        color,
+      });
+      handleOpenChange(false);
+      router.push(`/projects/${id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create the project.");
+    }
   }
 
   return (
@@ -74,6 +87,7 @@ export function CreateProjectDialog({
             <label className="grid gap-1.5 text-sm">
               <span className="text-muted-foreground">Name</span>
               <Input
+                name="name"
                 value={name}
                 autoFocus
                 placeholder="Payments"
@@ -86,6 +100,7 @@ export function CreateProjectDialog({
             <label className="grid gap-1.5 text-sm">
               <span className="text-muted-foreground">Key</span>
               <Input
+                name="key"
                 value={key}
                 maxLength={5}
                 placeholder="PAY"
@@ -105,6 +120,7 @@ export function CreateProjectDialog({
             <label className="grid gap-1.5 text-sm">
               <span className="text-muted-foreground">Description</span>
               <Textarea
+                name="description"
                 value={description}
                 rows={3}
                 placeholder="What this team is shipping."
@@ -130,13 +146,12 @@ export function CreateProjectDialog({
               </div>
             </div>
           </div>
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="button" disabled={!name.trim()} onClick={handleSubmit}>
-              Create project
-            </Button>
+            <Button type="submit">Create project</Button>
           </DialogFooter>
         </form>
       </DialogContent>

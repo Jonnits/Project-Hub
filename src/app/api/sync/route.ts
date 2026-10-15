@@ -12,9 +12,9 @@ export async function POST(request: Request) {
   const ops = Array.isArray(body?.ops) ? body.ops : [];
   if (ops.length === 0) {
     const workspace = await withDb((db) => workspaceForUser(db, user.id));
-    return Response.json({ workspace, applied: [] as string[] });
+    return Response.json({ user, workspace, applied: [] as string[] });
   }
 
   const result = await withDb((db) => applyUserOps(db, user.id, ops));
-  return Response.json(result);
+  return Response.json({ user, ...result });
 }

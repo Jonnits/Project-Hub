@@ -2,7 +2,7 @@
 
 I built Project Hub as a personal development kanban I can run in the browser. I wanted Linear-style issue keys, Trello-style columns I can drag across, and Jira-style WIP limits, plus the ability to sign in, share a board with someone else, and keep working when the network drops.
 
-Board data is stored on disk in `data/project-hub.json` (accounts, sessions, memberships, projects, issues). The browser also keeps a per-user cache and a mutation outbox, so edits I make offline replay when I am back online. **Reset demo data** in the sidebar restores the sample workspace for the demo team (API Platform, Field App, Marketing Site).
+Those last three are in. Board data lives on disk in `data/project-hub.json` (accounts, sessions, memberships, projects, issues). The browser keeps a **per-user** cache and a mutation outbox, so edits I make offline replay when I am back online, and signing in as someone else in this browser does not empty my saved boards. **Reset demo data** in the sidebar restores the sample workspace for the demo team (API Platform, Field App, Marketing Site).
 
 ## Run it
 
@@ -31,7 +31,7 @@ Demo team (password `demo`) already share the sample boards:
 - `sam@projecthub.local`
 - `riley@projecthub.local`
 
-Sign in as two of them in different browsers (or a private window) to see the same cards move.
+This browser holds one signed-in account at a time. To watch two people on the same board, use a second browser or a private window — not a second tab.
 
 ## What works today
 
@@ -42,8 +42,8 @@ Sign in as two of them in different browsers (or a private window) to see the sa
 - **Story points.** Fibonacci estimates (1, 2, 3, 5, 8, 13). Open issues sum as “pts remaining” in the board header.
 - **Drag and drop.** Grab a card with the mouse and drop it on another column, including empty columns. Status in the issue sheet still works as a fallback.
 - **Delete.** Deleting an issue asks **Are you sure you want to delete this issue?** before it is removed.
-- **Share links.** Copy a board invite or an issue invite. Recipients must register or sign in, then join, before the board appears in their sidebar.
-- **Offline.** The last workspace I loaded is cached in this browser. Edits queue locally and sync when the connection returns. The sidebar shows offline / pending / saved. Last write wins if two people edit the same issue.
+- **Share links.** From the board menu, **Copy board invite**. From an issue, **Copy issue link**. Recipients open `/join/…`, register or sign in, then join. The board only appears in their sidebar after that.
+- **Offline.** The last workspace I loaded is cached under my account in this browser. Edits queue locally and sync when the connection returns. The sidebar shows offline / pending / saved. Last write wins if two people edit the same issue.
 - **Appearance.** Night is the original dark theme. Day is off-white with navy. The sidebar switch toggles between them. Titles (Project Hub, Projects, project names, column names, issue titles) use **Playfair Display**.
 
 Clearing site data clears the local cache and signs me out of this browser. The JSON file on disk is the source of truth for the server.
@@ -53,6 +53,8 @@ Clearing site data clears the local cache and signs me out of this browser. The 
 Next.js 16 (App Router) and TypeScript, Tailwind v4, shadcn/ui, Zustand on the client, a JSON file on the server. No second component library. TypeScript is the primary language because the board is a pile of tagged records (issue, column, share, outbox op) that move between the browser, the API, and disk. Shared types catch a drag payload, a share token, and a queued mutation disagreeing with each other before I click around and find out. The same types also keep the Next.js App Router honest when a route handler returns a workspace the UI then renders.
 
 ## What I am planning next
+
+Offline rendering (queue locally, sync when connected), multiple user login, and shareable links that require registration are done. What is still ahead:
 
 ### Downloadable on my iMac
 

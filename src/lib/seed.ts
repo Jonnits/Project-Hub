@@ -62,6 +62,7 @@ export function createSeedWorkspace(): Workspace {
         description:
           "Shared auth, billing, and rate-limiting services used by every product.",
         color: "#5E6AD2",
+        ownerId: "p-maya",
         createdAt: hoursAgo(240),
         columns: [
           { id: "api-backlog", name: "Backlog", wipLimit: null },
@@ -78,6 +79,7 @@ export function createSeedWorkspace(): Workspace {
         description:
           "iOS and Android client for on-site engineers. Offline-first, push-heavy.",
         color: "#26B5CE",
+        ownerId: "p-maya",
         createdAt: hoursAgo(180),
         columns: [
           { id: "mob-backlog", name: "Backlog", wipLimit: null },
@@ -94,6 +96,7 @@ export function createSeedWorkspace(): Workspace {
         description:
           "Public site, docs search, and changelog. Shipping the new pricing page.",
         color: "#4CB782",
+        ownerId: "p-maya",
         createdAt: hoursAgo(90),
         columns: [
           { id: "web-backlog", name: "Backlog", wipLimit: null },

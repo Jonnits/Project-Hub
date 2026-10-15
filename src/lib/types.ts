@@ -27,7 +27,32 @@ export type Project = {
   description: string;
   color: string;
   createdAt: string;
+  ownerId: string;
   columns: Column[];
+};
+
+export type SessionUser = {
+  id: string;
+  name: string;
+  email: string;
+  initials: string;
+  color: string;
+};
+
+export type SyncStatus = "offline" | "pending" | "syncing" | "saved" | "error";
+
+export type ShareKind = "project" | "issue";
+
+export type SharePreview = {
+  token: string;
+  kind: ShareKind;
+  projectId: string;
+  projectName: string;
+  projectKey: string;
+  issueId?: string;
+  issueTitle?: string;
+  issueNumber?: number;
+  alreadyMember: boolean;
 };
 
 export type Issue = {

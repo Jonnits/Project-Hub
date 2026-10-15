@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import type { ReactNode } from "react";
 
-import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -22,13 +22,26 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Forge — development kanban",
+  title: "Project Hub — development kanban",
   description:
-    "A Linear-inspired kanban board for tracking development projects, issues, and WIP.",
+    "A Linear-inspired kanban board for tracking development projects, issues, and WIP, with accounts, share links, and offline sync.",
   icons: { icon: "/favicon.svg" },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Project Hub",
+    statusBarStyle: "black-translucent",
+  },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f1ea" },
+    { media: "(prefers-color-scheme: dark)", color: "#14151a" },
+  ],
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
@@ -38,14 +51,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem("forge-appearance")==="day")document.documentElement.classList.remove("dark")}catch(e){}`,
+            __html: `try{if(localStorage.getItem("project-hub-appearance")==="day")document.documentElement.classList.remove("dark")}catch(e){}`,
           }}
         />
       </head>
       <body className="flex min-h-full flex-col font-sans">
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

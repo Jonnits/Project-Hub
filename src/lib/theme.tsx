@@ -6,7 +6,7 @@ import { useIsClient } from "@/hooks/use-is-client";
 
 export type Appearance = "day" | "night";
 
-const STORAGE_KEY = "forge-appearance";
+const STORAGE_KEY = "project-hub-appearance";
 
 function readAppearance(): Appearance {
   try {

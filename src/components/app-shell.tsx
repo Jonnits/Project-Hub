@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Box, Menu, Plus, RotateCcw } from "lucide-react";
+import { Box, LogOut, Menu, Plus, RotateCcw } from "lucide-react";
 
 import { CreateProjectDialog } from "@/components/create-project-dialog";
+import { SyncStatus } from "@/components/sync-status";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -15,6 +17,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { apiLogout } from "@/lib/api";
+import { isDemoUserId } from "@/lib/demo";
 import { useBoardStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +75,17 @@ function SidebarBody({
 }) {
   const router = useRouter();
   const resetDemo = useBoardStore((state) => state.resetDemo);
+  const user = useBoardStore((state) => state.user);
+  const signOutLocal = useBoardStore((state) => state.signOutLocal);
   const [createOpen, setCreateOpen] = useState(false);
+  const demo = user ? isDemoUserId(user.id) : false;
+
+  async function logout() {
+    await apiLogout();
+    signOutLocal();
+    onNavigate?.();
+    router.replace("/login");
+  }
 
   return (
     <>
@@ -84,7 +98,7 @@ function SidebarBody({
           <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Box className="size-4" />
           </span>
-          Forge
+          Project Hub
         </Link>
       </div>
       <div className="flex items-center justify-between px-3 pb-2">
@@ -104,20 +118,50 @@ function SidebarBody({
         <ProjectNav onNavigate={onNavigate} />
       </div>
       <Separator />
+      <div className="px-1 py-1">
+        <SyncStatus />
+      </div>
       <ThemeToggle />
-      <div className="p-2">
+      {user ? (
+        <div className="flex items-center gap-2 px-3 py-2">
+          <Avatar size="sm">
+            <AvatarFallback
+              className="text-[10px] text-white"
+              style={{ backgroundColor: user.color }}
+            >
+              {user.initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm">{user.name}</p>
+            <p className="truncate font-mono text-[11px] text-muted-foreground">{user.email}</p>
+          </div>
+        </div>
+      ) : null}
+      <div className="grid gap-1 p-2">
+        {demo ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-muted-foreground"
+            onClick={() => {
+              resetDemo();
+              onNavigate?.();
+              router.push("/");
+            }}
+          >
+            <RotateCcw />
+            Reset demo data
+          </Button>
+        ) : null}
         <Button
           variant="ghost"
           size="sm"
           className="w-full justify-start text-muted-foreground"
-          onClick={() => {
-            resetDemo();
-            onNavigate?.();
-            router.push("/");
-          }}
+          onClick={() => void logout()}
         >
-          <RotateCcw />
-          Reset demo data
+          <LogOut />
+          Sign out
         </Button>
       </div>
       <CreateProjectDialog open={createOpen} onOpenChange={setCreateOpen} />
@@ -145,7 +189,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Button>
           <Link href="/" className="font-heading flex items-center gap-2 text-lg">
             <Box className="size-4" />
-            Forge
+            Project Hub
           </Link>
         </div>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

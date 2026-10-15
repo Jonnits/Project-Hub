@@ -1,229 +1,274 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
 
-import { keyFromName, uid } from "@/lib/format";
+import { apiSync, apiWorkspace } from "@/lib/api";
+import { readCache, readOutbox, writeCache, writeOutbox, writeSession } from "@/lib/cache";
+import { isDemoUserId } from "@/lib/demo";
+import { uid } from "@/lib/format";
+import {
+  applyOp,
+  DEFAULT_COLUMNS,
+  emptyWorkspace,
+  makeOp,
+  type CreateIssueInput,
+  type CreateProjectInput,
+  type Op,
+  type UpdateIssueInput,
+} from "@/lib/ops";
+import { personFromUser } from "@/lib/people";
 import { createSeedWorkspace } from "@/lib/seed";
-import type { Issue, Priority, Project, Workspace } from "@/lib/types";
-
-const DEFAULT_COLUMNS = [
-  { name: "Backlog", wipLimit: null as number | null },
-  { name: "Todo", wipLimit: null },
-  { name: "In Progress", wipLimit: 3 },
-  { name: "In Review", wipLimit: 4 },
-  { name: "Done", wipLimit: null },
-];
-
-type CreateProjectInput = {
-  name: string;
-  key?: string;
-  description: string;
-  color: string;
-};
-
-type CreateIssueInput = {
-  projectId: string;
-  title: string;
-  description?: string;
-  status?: string;
-  priority?: Priority;
-  assigneeId?: string | null;
-  labelIds?: string[];
-  storyPoints?: number | null;
-};
-
-type UpdateIssueInput = Partial<
-  Pick<
-    Issue,
-    | "title"
-    | "description"
-    | "status"
-    | "priority"
-    | "assigneeId"
-    | "labelIds"
-    | "storyPoints"
-  >
->;
+import type { Project, SessionUser, SyncStatus, Workspace } from "@/lib/types";
 
 type BoardStore = Workspace & {
-  createProject: (input: CreateProjectInput) => string;
+  user: SessionUser | null;
+  hydrated: boolean;
+  syncStatus: SyncStatus;
+  outbox: Op[];
+  lastSyncedAt: string | null;
+  error: string | null;
+  hydrate: (user: SessionUser) => Promise<void>;
+  signOutLocal: () => void;
+  flush: () => Promise<void>;
+  pull: () => Promise<void>;
+  markOffline: () => void;
+  createProject: (input: Omit<CreateProjectInput, "ownerId" | "id" | "columns">) => string;
   updateProject: (id: string, patch: Partial<Pick<Project, "name" | "description" | "color">>) => void;
   deleteProject: (id: string) => void;
-  createIssue: (input: CreateIssueInput) => string;
+  createIssue: (input: Omit<CreateIssueInput, "id">) => string;
   updateIssue: (id: string, patch: UpdateIssueInput) => void;
   deleteIssue: (id: string) => void;
   moveIssue: (issueId: string, toColumnId: string, beforeIssueId?: string | null) => void;
   resetDemo: () => void;
 };
 
-function now() {
-  return new Date().toISOString();
+function asWorkspace(state: Workspace): Workspace {
+  return {
+    people: state.people,
+    labels: state.labels,
+    projects: state.projects,
+    issues: state.issues,
+  };
 }
 
-function nextOrder(issues: Issue[], projectId: string, status: string) {
-  const dest = issues.filter((issue) => issue.projectId === projectId && issue.status === status);
-  if (dest.length === 0) return 0;
-  return Math.max(...dest.map((issue) => issue.order)) + 1;
+function persist(state: BoardStore) {
+  if (!state.user) return;
+  writeCache(state.user.id, asWorkspace(state));
+  writeOutbox(state.user.id, state.outbox);
 }
 
-export const useBoardStore = create<BoardStore>()(
-  persist(
-    (set, get) => ({
-      ...createSeedWorkspace(),
-      createProject: (input) => {
-        const id = uid("proj");
-        const key = (input.key || keyFromName(input.name)).slice(0, 5).toUpperCase();
-        const createdAt = now();
-        const project: Project = {
-          id,
-          name: input.name.trim(),
-          key,
-          description: input.description.trim(),
-          color: input.color,
-          createdAt,
-          columns: DEFAULT_COLUMNS.map((column) => ({
-            id: uid("col"),
-            name: column.name,
-            wipLimit: column.wipLimit,
-          })),
-        };
-        set((state) => ({ projects: [project, ...state.projects] }));
-        return id;
-      },
-      updateProject: (id, patch) => {
-        set((state) => ({
-          projects: state.projects.map((project) =>
-            project.id === id ? { ...project, ...patch } : project
-          ),
-        }));
-      },
-      deleteProject: (id) => {
-        set((state) => ({
-          projects: state.projects.filter((project) => project.id !== id),
-          issues: state.issues.filter((issue) => issue.projectId !== id),
-        }));
-      },
-      createIssue: (input) => {
-        const project = get().projects.find((item) => item.id === input.projectId);
-        if (!project) throw new Error("Project not found");
-        const status = input.status ?? project.columns[0]?.id;
-        if (!status) throw new Error("Project has no columns");
-        const issues = get().issues.filter((issue) => issue.projectId === input.projectId);
-        const number =
-          issues.length === 0 ? 1 : Math.max(...issues.map((issue) => issue.number)) + 1;
-        const createdAt = now();
-        const id = uid("issue");
-        const issue: Issue = {
-          id,
-          projectId: input.projectId,
-          number,
-          title: input.title.trim(),
-          description: input.description?.trim() ?? "",
-          status,
-          priority: input.priority ?? "none",
-          assigneeId: input.assigneeId ?? null,
-          labelIds: input.labelIds ?? [],
-          storyPoints: input.storyPoints ?? null,
-          order: nextOrder(get().issues, input.projectId, status),
-          createdAt,
-          updatedAt: createdAt,
-        };
-        set((state) => ({ issues: [...state.issues, issue] }));
-        return id;
-      },
-      updateIssue: (id, patch) => {
-        set((state) => ({
-          issues: state.issues.map((issue) =>
-            issue.id === id
-              ? {
-                  ...issue,
-                  ...patch,
-                  title: patch.title?.trim() ?? issue.title,
-                  description:
-                    patch.description !== undefined
-                      ? patch.description
-                      : issue.description,
-                  updatedAt: now(),
-                }
-              : issue
-          ),
-        }));
-      },
-      deleteIssue: (id) => {
-        set((state) => ({
-          issues: state.issues.filter((issue) => issue.id !== id),
-        }));
-      },
-      moveIssue: (issueId, toColumnId, beforeIssueId) => {
-        const issue = get().issues.find((item) => item.id === issueId);
-        if (!issue) return;
-        const siblings = get()
-          .issues.filter(
-            (item) =>
-              item.projectId === issue.projectId &&
-              item.status === toColumnId &&
-              item.id !== issueId
-          )
-          .sort((a, b) => a.order - b.order);
+let flushing = false;
+let flushAgain = false;
 
-        let order: number;
-        if (beforeIssueId) {
-          const index = siblings.findIndex((item) => item.id === beforeIssueId);
-          if (index === -1) {
-            order = siblings.length === 0 ? 0 : siblings[siblings.length - 1].order + 1;
-          } else if (index === 0) {
-            order = siblings[0].order - 1;
-          } else {
-            order = (siblings[index - 1].order + siblings[index].order) / 2;
-          }
-        } else {
-          order = siblings.length === 0 ? 0 : siblings[siblings.length - 1].order + 1;
+export const useBoardStore = create<BoardStore>()((set, get) => {
+  function dispatch(op: Op) {
+    set((state) => {
+      const next = applyOp(asWorkspace(state), op);
+      const syncStatus: SyncStatus =
+        typeof navigator !== "undefined" && navigator.onLine ? "pending" : "offline";
+      const updated: BoardStore = {
+        ...state,
+        ...next,
+        outbox: [...state.outbox, op],
+        syncStatus,
+        error: null,
+      };
+      persist(updated);
+      return updated;
+    });
+    void get().flush();
+  }
+
+  return {
+    ...emptyWorkspace(),
+    user: null,
+    hydrated: false,
+    syncStatus: "saved",
+    outbox: [],
+    lastSyncedAt: null,
+    error: null,
+
+    hydrate: async (user) => {
+      const cached = readCache(user.id);
+      const outbox = readOutbox(user.id);
+      const workspace = cached ?? {
+        ...emptyWorkspace(),
+        people: [personFromUser(user)],
+      };
+      const online = typeof navigator === "undefined" || navigator.onLine;
+      set({
+        user,
+        ...workspace,
+        outbox,
+        hydrated: true,
+        syncStatus: online ? (outbox.length ? "pending" : "syncing") : "offline",
+        error: null,
+      });
+      writeSession(user);
+      persist(get());
+      if (online) {
+        await get().flush();
+        if (get().outbox.length === 0) await get().pull();
+      }
+    },
+
+    signOutLocal: () => {
+      writeSession(null);
+      set({
+        ...emptyWorkspace(),
+        user: null,
+        hydrated: false,
+        outbox: [],
+        syncStatus: "saved",
+        lastSyncedAt: null,
+        error: null,
+      });
+    },
+
+    markOffline: () => {
+      set((state) => ({
+        syncStatus: state.outbox.length ? "pending" : "offline",
+      }));
+    },
+
+    flush: async () => {
+      if (flushing) {
+        flushAgain = true;
+        return;
+      }
+      const snapshot = get();
+      if (!snapshot.user) return;
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        set({ syncStatus: snapshot.outbox.length ? "pending" : "offline" });
+        return;
+      }
+      flushing = true;
+      set({ syncStatus: snapshot.outbox.length ? "syncing" : snapshot.syncStatus });
+      try {
+        const ops = get().outbox;
+        const result = ops.length ? await apiSync(ops) : { workspace: await apiWorkspace(), applied: [] };
+        const leftover = get().outbox.filter((op) => !result.applied.includes(op.id));
+        let workspace = result.workspace;
+        for (const op of leftover) workspace = applyOp(workspace, op);
+        const next: BoardStore = {
+          ...get(),
+          ...workspace,
+          outbox: leftover,
+          syncStatus: leftover.length ? "pending" : "saved",
+          lastSyncedAt: new Date().toISOString(),
+          error: null,
+        };
+        set(next);
+        persist(next);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "sync";
+        if (message === "unauthorized") {
+          get().signOutLocal();
+          return;
         }
-
-        set((state) => ({
-          issues: state.issues.map((item) =>
-            item.id === issueId
-              ? { ...item, status: toColumnId, order, updatedAt: now() }
-              : item
-          ),
-        }));
-      },
-      resetDemo: () => {
-        set({ ...createSeedWorkspace() });
-      },
-    }),
-    {
-      name: "forge-board",
-      version: 2,
-      skipHydration: true,
-      migrate: (persisted) => {
-        const state = persisted as Workspace;
-        return {
-          ...state,
-          issues: (state.issues ?? []).map((issue) => ({
-            ...issue,
-            storyPoints: issue.storyPoints ?? null,
-          })),
-        };
-      },
-      storage: createJSONStorage(() => {
-        if (typeof window === "undefined") {
-          return {
-            getItem: () => null,
-            setItem: () => {},
-            removeItem: () => {},
-          };
+        const offline = typeof navigator !== "undefined" && !navigator.onLine;
+        set({
+          syncStatus: offline || message === "Failed to fetch" ? (get().outbox.length ? "pending" : "offline") : "error",
+          error: offline ? null : message,
+        });
+      } finally {
+        flushing = false;
+        if (flushAgain) {
+          flushAgain = false;
+          void get().flush();
         }
-        return window.localStorage;
-      }),
-      partialize: (state) => ({
-        people: state.people,
-        labels: state.labels,
-        projects: state.projects,
-        issues: state.issues,
-      }),
-    }
-  )
-);
+      }
+    },
 
+    pull: async () => {
+      if (get().outbox.length || flushing) return;
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        set({ syncStatus: "offline" });
+        return;
+      }
+      try {
+        set({ syncStatus: "syncing" });
+        const workspace = await apiWorkspace();
+        const leftover = get().outbox;
+        let nextWorkspace = workspace;
+        for (const op of leftover) nextWorkspace = applyOp(nextWorkspace, op);
+        const next: BoardStore = {
+          ...get(),
+          ...nextWorkspace,
+          syncStatus: leftover.length ? "pending" : "saved",
+          lastSyncedAt: new Date().toISOString(),
+          error: null,
+        };
+        set(next);
+        persist(next);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "sync";
+        if (message === "unauthorized") {
+          get().signOutLocal();
+          return;
+        }
+        set({
+          syncStatus: typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "error",
+          error: message,
+        });
+      }
+    },
+
+    createProject: (input) => {
+      const user = get().user;
+      if (!user) throw new Error("Sign in to create a project.");
+      const id = uid("proj");
+      const columns = DEFAULT_COLUMNS.map((column) => ({
+        id: uid("col"),
+        name: column.name,
+        wipLimit: column.wipLimit,
+      }));
+      dispatch(
+        makeOp("createProject", {
+          ...input,
+          id,
+          ownerId: user.id,
+          columns,
+        })
+      );
+      return id;
+    },
+
+    updateProject: (id, patch) => {
+      dispatch(makeOp("updateProject", { id, patch }));
+    },
+
+    deleteProject: (id) => {
+      dispatch(makeOp("deleteProject", { id }));
+    },
+
+    createIssue: (input) => {
+      const id = uid("issue");
+      dispatch(makeOp("createIssue", { ...input, id }));
+      return id;
+    },
+
+    updateIssue: (id, patch) => {
+      dispatch(makeOp("updateIssue", { id, patch }));
+    },
+
+    deleteIssue: (id) => {
+      dispatch(makeOp("deleteIssue", { id }));
+    },
+
+    moveIssue: (issueId, toColumnId, beforeIssueId) => {
+      dispatch(makeOp("moveIssue", { issueId, toColumnId, beforeIssueId: beforeIssueId ?? null }));
+    },
+
+    resetDemo: () => {
+      const user = get().user;
+      if (!user || !isDemoUserId(user.id)) return;
+      dispatch(
+        makeOp("resetDemo", {
+          ownerId: user.id,
+          workspace: createSeedWorkspace(),
+        })
+      );
+    },
+  };
+});

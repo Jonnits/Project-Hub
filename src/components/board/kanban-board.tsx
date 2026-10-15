@@ -10,6 +10,7 @@ import { CreateIssueDialog } from "@/components/board/create-issue-dialog";
 import { IssueCardFace } from "@/components/board/issue-card";
 import { IssueSheet } from "@/components/board/issue-sheet";
 import { useIssueDrag } from "@/components/board/use-issue-drag";
+import { ShareMenuItem } from "@/components/share-action";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,7 +47,13 @@ function matchesFilters(
   return true;
 }
 
-export function KanbanBoard({ projectId }: { projectId: string }) {
+export function KanbanBoard({
+  projectId,
+  initialIssueId,
+}: {
+  projectId: string;
+  initialIssueId?: string;
+}) {
   const router = useRouter();
   const project = useBoardStore((state) =>
     state.projects.find((item) => item.id === projectId)
@@ -63,7 +70,7 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
   const [label, setLabel] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [createStatus, setCreateStatus] = useState<string | undefined>();
-  const [openIssueId, setOpenIssueId] = useState<string | null>(null);
+  const [openIssueId, setOpenIssueId] = useState<string | null>(initialIssueId ?? null);
   const lastDragAt = useRef(0);
   const searchRef = useRef<HTMLInputElement>(null);
   const handleDropIssue = useCallback(
@@ -222,6 +229,10 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <ShareMenuItem kind="project" targetId={project.id}>
+                Copy board invite
+              </ShareMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => {

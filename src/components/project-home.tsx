@@ -108,8 +108,8 @@ export function ProjectHome() {
         <div>
           <h1 className="font-heading text-xl tracking-tight">Projects</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Development boards with Linear-style issues and Trello-style drag
-            and drop.
+            Boards you own or were invited to. Changes save here and sync when
+            you are back online.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

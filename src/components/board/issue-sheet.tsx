@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 
+import { ShareIssueButton } from "@/components/share-action";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -319,7 +320,8 @@ function IssueEditor({
           </div>
         </div>
       </div>
-      <div className="border-t border-border/80 p-4">
+      <div className="grid gap-2 border-t border-border/80 p-4">
+        <ShareIssueButton issueId={issue.id} />
         <Button
           variant="destructive"
           className="w-full"

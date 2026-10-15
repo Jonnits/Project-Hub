@@ -1,0 +1,17 @@
+{
+  "name": "Project Hub",
+  "short_name": "Project Hub",
+  "description": "Development kanban with accounts, share links, and offline sync.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14151a",
+  "theme_color": "#5E6AD2",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

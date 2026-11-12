@@ -18,7 +18,7 @@ npm run build
 npm start -- --hostname 127.0.0.1 --port 43127
 ```
 
-The production build is the one that behaves like a PWA (service worker + Add to Dock). `next dev` still queues my offline edits; it just does not cache the Next.js bundles.
+The production build is the one I add to the Dock (`npm run build` then `npm start`). `next dev` still queues my offline edits; it just does not cache the Next.js bundles.
 
 ## Sign in
 
@@ -45,6 +45,7 @@ This browser holds one signed-in account at a time. To watch two people on the s
 - **Share links.** From the board menu, **Copy board invite**. From an issue, **Copy issue link**. Recipients open `/join/…`, register or sign in, then join. The board only appears in their sidebar after that.
 - **Offline.** The last workspace I loaded is cached under my account in this browser. Edits queue locally and sync when the connection returns. The sidebar shows offline / pending / saved. Last write wins if two people edit the same issue.
 - **Appearance.** Night is the original dark theme. Day is off-white with navy. The sidebar switch toggles between them. Titles (Project Hub, Projects, project names, column names, issue titles) use **Playfair Display**.
+- **Add to Dock.** Sidebar **Add to Dock** (and the same control on the sign-in screen). Safari on a Mac: **File → Add to Dock**. Chrome: install from the address bar, then keep it in the Dock. The window still needs this computer running `npm start` (or `npm run dev`) at [http://127.0.0.1:43127](http://127.0.0.1:43127).
 
 Clearing site data clears the local cache and signs me out of this browser. The JSON file on disk is the source of truth for the server.
 
@@ -54,18 +55,13 @@ Next.js 16 (App Router) and TypeScript, Tailwind v4, shadcn/ui, Zustand on the c
 
 ## What I am planning next
 
-I finished the offline queue, multi-user login, and shareable invites that require registration. What I still want:
+I finished the offline queue, multi-user login, shareable invites, and Add to Dock. What I still want:
 
-### Downloadable on my iMac
+### A real `.app` on my iMac
 
-Right now Project Hub is a local web app: `npm run dev` or a production `next start`. I want it to live on the machine like a real app, not a terminal tab.
+Add to Dock is a standalone browser window with the Project Hub icon. I still want a double-clickable `.app` that does not depend on a terminal tab.
 
-I have not implemented this yet. The realistic options, from lightest to heaviest:
-
-1. **Add to Dock** (Safari or Chrome) as a standalone window. The web app manifest and service worker are already in place. It would still be the browser engine under the hood.
-2. **A real `.app`.** Wrap the UI in Tauri (preferred) or Electron. The board itself would not need a rewrite. The extra work is the native shell, icons, a production build, and — if I want double-click without Gatekeeper warnings — Apple notarization.
-
-I will start with Add to Dock if I only want it on the desktop. A signed Mac app is a separate packaging pass.
+I have not implemented that yet. The board itself would not need a rewrite. Wrap the UI in Tauri (preferred) or Electron, add icons, a production build, and — if I want Gatekeeper to stay quiet — Apple notarization. That is a separate packaging pass.
 
 ### Later, if I keep using this
 

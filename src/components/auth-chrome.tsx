@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Box } from "lucide-react";
 
+import { AddToDock } from "@/components/add-to-dock";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AuthChrome({
@@ -23,8 +24,11 @@ export function AuthChrome({
           </span>
           Project Hub
         </Link>
-        <div className="w-52">
-          <ThemeToggle />
+        <div className="flex flex-col items-end gap-1">
+          <div className="w-52">
+            <ThemeToggle />
+          </div>
+          <AddToDock compact />
         </div>
       </header>
       <main className="flex flex-1 items-start justify-center px-4 py-10 sm:py-16">

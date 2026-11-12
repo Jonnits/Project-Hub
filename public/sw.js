@@ -1,5 +1,15 @@
-const CACHE = "project-hub-v1";
-const APP_SHELL = ["/", "/login", "/register", "/manifest.webmanifest", "/favicon.svg"];
+const CACHE = "project-hub-v5";
+const APP_SHELL = [
+  "/",
+  "/login",
+  "/register",
+  "/manifest.webmanifest",
+  "/favicon.svg",
+  "/favicon-32.png",
+  "/apple-touch-icon.png",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

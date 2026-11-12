@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Box, LogOut, Menu, Plus, RotateCcw } from "lucide-react";
 
+import { AddToDock } from "@/components/add-to-dock";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
 import { SyncStatus } from "@/components/sync-status";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -122,6 +123,9 @@ function SidebarBody({
         <SyncStatus />
       </div>
       <ThemeToggle />
+      <div className="px-1">
+        <AddToDock />
+      </div>
       {user ? (
         <div className="flex items-center gap-2 px-3 py-2">
           <Avatar size="sm">

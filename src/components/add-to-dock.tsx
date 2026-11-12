@@ -81,7 +81,8 @@ export function AddToDock({ compact = false }: { compact?: boolean }) {
           <DialogHeader>
             <DialogTitle>Add Project Hub to the Dock</DialogTitle>
             <DialogDescription>
-              The board opens in its own window. Keep the local server running so the window has something to load.
+              After a one-time install, closing this window no longer requires a terminal. The board starts with
+              this Mac.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 text-sm">
@@ -106,9 +107,10 @@ export function AddToDock({ compact = false }: { compact?: boolean }) {
               </p>
             )}
             <p className="text-muted-foreground">
-              Prefer a production window: <span className="font-mono text-xs">npm run build</span> then{" "}
-              <span className="font-mono text-xs">npm start -- --hostname 127.0.0.1 --port 43127</span>, then add that
-              URL.
+              One-time, from the Project Hub folder: <span className="font-mono text-xs">npm run install-app</span>.
+              That puts Project Hub in Applications, starts the board at login, and leaves it running when this
+              window closes. Or double-click <span className="font-mono text-xs">Project Hub.command</span> in
+              Finder.
             </p>
           </div>
           <DialogFooter>

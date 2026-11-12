@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 --port 43127",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --hostname 127.0.0.1 --port 43127",
+    "app": "node desktop/launch.mjs",
+    "install-app": "node desktop/install-macos-app.mjs",
+    "uninstall-app": "node desktop/install-macos-app.mjs --remove",
     "lint": "eslint"
   },
   "dependencies": {

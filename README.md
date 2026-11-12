@@ -4,23 +4,49 @@ This is my development kanban. I run it in the browser. I wanted Linear-style is
 
 I have those last three working now. Board data lives on disk in `data/project-hub.json` — accounts, sessions, memberships, projects, and issues. This browser keeps a cache per account and a queue of my edits, so work I do offline replays when I am back online. Signing in as someone else here does not empty my saved boards. **Reset demo data** in the sidebar restores the sample workspace for the demo team (API Platform, Field App, Marketing Site).
 
-## Run it
+## Where this folder is
+
+There is no Project Hub folder under Applications until I install the Mac app. The project is the `Project-Hub` clone from GitHub — the directory that contains `package.json` and `data/project-hub.json`.
+
+I find it without guessing `cd` paths:
+
+- Spotlight (Cmd-Space): search `project-hub.json`
+- Finder search (Cmd-F) in my home folder, file name `project-hub.json`
+- Terminal: `mdfind -name project-hub.json`
+- GitHub Desktop: Repository → Show in Finder (often `~/Documents/GitHub/Project-Hub`)
+
+If I never cloned it, I put it somewhere I can see:
+
+```bash
+git clone https://github.com/Jonnits/Project-Hub.git ~/Desktop/Project-Hub
+```
+
+Boards I already created live in that clone’s `data/project-hub.json`. I run the install below from that same folder, not a second copy.
+
+## Run it like a Mac app
+
+Once, from the Project Hub folder:
 
 ```bash
 npm install
-npm run dev
+npm run install-app
 ```
 
-Then open [http://127.0.0.1:43127](http://127.0.0.1:43127).
+That writes **Project Hub** to `~/Applications`, starts the board with this Mac, and keeps it running at [http://127.0.0.1:43127](http://127.0.0.1:43127) after I close the window. Spotlight finds it. I can drag it to the Dock.
+
+After that, closing and reopening the window does not need a terminal.
+
+If I have not installed yet, I double-click `Project Hub.command` in Finder (right-click → Open the first time). Same folder as this README — no `cd`.
 
 ```bash
-npm run build
-npm start -- --hostname 127.0.0.1 --port 43127
+npm run app
 ```
 
-The production build is the one I add to the Dock (`npm run build` then `npm start`). Run those commands from the Project Hub folder, not `~`. `next dev` still queues my offline edits.
+also opens it. `npm run uninstall-app` removes the Applications entry and the login service.
 
-If the Dock window comes back blank, the old service worker was serving a stale page. Start the server from this folder, then hard-refresh the window (Shift-reload). The boards live in `data/project-hub.json`; a blank window does not mean they are gone.
+`npm run dev` is still there for live code reload. I do not need it to use the board.
+
+If an old Dock window comes back blank, I open Project Hub from Applications once, then Shift-reload the window. The boards are in `data/project-hub.json`; a blank window does not mean they are gone.
 
 ## Sign in
 
@@ -47,7 +73,7 @@ This browser holds one signed-in account at a time. To watch two people on the s
 - **Share links.** From the board menu, **Copy board invite**. From an issue, **Copy issue link**. Recipients open `/join/…`, register or sign in, then join. The board only appears in their sidebar after that.
 - **Offline.** The last workspace I loaded is cached under my account in this browser. Edits queue locally and sync when the connection returns. The sidebar shows offline / pending / saved. Last write wins if two people edit the same issue.
 - **Appearance.** Night is the original dark theme. Day is off-white with navy. The sidebar switch toggles between them. Titles (Project Hub, Projects, project names, column names, issue titles) use **Playfair Display**.
-- **Add to Dock.** Sidebar **Add to Dock** (and the same control on the sign-in screen). Safari on a Mac: **File → Add to Dock**. Chrome: install from the address bar, then keep it in the Dock. The window still needs this computer running `npm start` (or `npm run dev`) at [http://127.0.0.1:43127](http://127.0.0.1:43127), from the Project Hub folder. If the server is down, the window says so instead of going blank.
+- **Add to Dock.** Sidebar **Add to Dock** (and the same control on the sign-in screen). After `npm run install-app`, **Project Hub** lives in Applications and starts with the Mac, so Safari **File → Add to Dock** is just the window — not a second server I have to remember. Chrome can install from the address bar the same way. If the server is down, the window says so instead of going blank.
 
 Clearing site data clears the local cache and signs me out of this browser. The JSON file on disk is the source of truth for the server.
 
@@ -57,13 +83,13 @@ Next.js 16 (App Router) and TypeScript, Tailwind v4, shadcn/ui, Zustand on the c
 
 ## What I am planning next
 
-I finished the offline queue, multi-user login, shareable invites, and Add to Dock. What I still want:
+I finished the offline queue, multi-user login, shareable invites, Add to Dock, and a Mac app that starts the board without a terminal. What I still want:
 
-### A real `.app` on my iMac
+### A signed `.app` I can move off this clone
 
-Add to Dock is a standalone browser window with the Project Hub icon. I still want a double-clickable `.app` that does not depend on a terminal tab.
+`npm run install-app` already puts Project Hub in Applications and starts it at login. That app still points at this clone (Node + the JSON file in `data/`). I still want a self-contained, notarized `.app` I can copy to another Mac without the repo sitting next to it.
 
-I have not implemented that yet. The board itself would not need a rewrite. Wrap the UI in Tauri (preferred) or Electron, add icons, a production build, and — if I want Gatekeeper to stay quiet — Apple notarization. That is a separate packaging pass.
+That wrap (Tauri, preferably) is a separate packaging pass. The board itself does not need a rewrite.
 
 ### Later, if I keep using this
 

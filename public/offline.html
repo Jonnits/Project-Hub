@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project Hub</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #14151a;
+        color: #e8e6e3;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+      main {
+        box-sizing: border-box;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 28rem;
+        border: 1px solid #2a2c34;
+        border-radius: 16px;
+        background: #1b1c22;
+        padding: 28px 24px;
+      }
+      h1 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.6rem;
+      }
+      p {
+        margin: 12px 0 0;
+        line-height: 1.45;
+        color: #a8a29e;
+        font-size: 0.95rem;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8rem;
+        color: #e8e6e3;
+      }
+      .mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        margin-right: 0.5rem;
+        border-radius: 0.4rem;
+        background: #5e6ad2;
+        color: #f8f8ff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="card">
+        <h1><span class="mark">JR</span>Project Hub</h1>
+        <p>
+          The board is still on this machine. This window is open, but the local server is not, so the app
+          cannot load.
+        </p>
+        <p>
+          In a terminal, from the Project Hub folder (not your home folder):
+        </p>
+        <p>
+          <code>npm run dev</code><br />
+          or<br />
+          <code>npm run build && npm start -- --hostname 127.0.0.1 --port 43127</code>
+        </p>
+        <p>Then reopen this window, or go to <code>http://127.0.0.1:43127</code>.</p>
+      </div>
+    </main>
+  </body>
+</html>

@@ -18,7 +18,9 @@ npm run build
 npm start -- --hostname 127.0.0.1 --port 43127
 ```
 
-The production build is the one I add to the Dock (`npm run build` then `npm start`). `next dev` still queues my offline edits; it just does not cache the Next.js bundles.
+The production build is the one I add to the Dock (`npm run build` then `npm start`). Run those commands from the Project Hub folder, not `~`. `next dev` still queues my offline edits.
+
+If the Dock window comes back blank, the old service worker was serving a stale page. Start the server from this folder, then hard-refresh the window (Shift-reload). The boards live in `data/project-hub.json`; a blank window does not mean they are gone.
 
 ## Sign in
 
@@ -45,7 +47,7 @@ This browser holds one signed-in account at a time. To watch two people on the s
 - **Share links.** From the board menu, **Copy board invite**. From an issue, **Copy issue link**. Recipients open `/join/…`, register or sign in, then join. The board only appears in their sidebar after that.
 - **Offline.** The last workspace I loaded is cached under my account in this browser. Edits queue locally and sync when the connection returns. The sidebar shows offline / pending / saved. Last write wins if two people edit the same issue.
 - **Appearance.** Night is the original dark theme. Day is off-white with navy. The sidebar switch toggles between them. Titles (Project Hub, Projects, project names, column names, issue titles) use **Playfair Display**.
-- **Add to Dock.** Sidebar **Add to Dock** (and the same control on the sign-in screen). Safari on a Mac: **File → Add to Dock**. Chrome: install from the address bar, then keep it in the Dock. The window still needs this computer running `npm start` (or `npm run dev`) at [http://127.0.0.1:43127](http://127.0.0.1:43127).
+- **Add to Dock.** Sidebar **Add to Dock** (and the same control on the sign-in screen). Safari on a Mac: **File → Add to Dock**. Chrome: install from the address bar, then keep it in the Dock. The window still needs this computer running `npm start` (or `npm run dev`) at [http://127.0.0.1:43127](http://127.0.0.1:43127), from the Project Hub folder. If the server is down, the window says so instead of going blank.
 
 Clearing site data clears the local cache and signs me out of this browser. The JSON file on disk is the source of truth for the server.
 

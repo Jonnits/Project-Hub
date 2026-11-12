@@ -1,8 +1,6 @@
-const CACHE = "project-hub-v5";
+const CACHE = "project-hub-v6";
 const APP_SHELL = [
-  "/",
-  "/login",
-  "/register",
+  "/offline.html",
   "/manifest.webmanifest",
   "/favicon.svg",
   "/favicon-32.png",
@@ -23,12 +21,17 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))
-      )
-      .then(() => self.clients.claim())
+    (async () => {
+      const keys = await caches.keys();
+      const stale = keys.filter((key) => key !== CACHE);
+      await Promise.all(keys.map((key) => caches.delete(key)));
+      const cache = await caches.open(CACHE);
+      await cache.addAll(APP_SHELL).catch(() => undefined);
+      await self.clients.claim();
+      if (!stale.length) return;
+      const windows = await self.clients.matchAll({ type: "window" });
+      await Promise.all(windows.map((client) => client.navigate(client.url)));
+    })()
   );
 });
 
@@ -41,8 +44,29 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/")) return;
   if (url.pathname.startsWith("/_next/")) return;
 
+  if (isDocument(request)) {
+    event.respondWith(networkOrOffline(request));
+    return;
+  }
+
   event.respondWith(networkFirst(request));
 });
+
+function isDocument(request) {
+  if (request.mode === "navigate") return true;
+  const accept = request.headers.get("accept") || "";
+  return accept.includes("text/html");
+}
+
+async function networkOrOffline(request) {
+  try {
+    return await fetch(request);
+  } catch {
+    const cached = await caches.match("/offline.html");
+    if (cached) return cached;
+    throw new Error("offline");
+  }
+}
 
 async function networkFirst(request) {
   try {
@@ -55,10 +79,6 @@ async function networkFirst(request) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    if (request.mode === "navigate") {
-      const home = await caches.match("/");
-      if (home) return home;
-    }
     throw new Error("offline");
   }
 }

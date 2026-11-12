@@ -9,7 +9,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     const register = () => {
-      void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+      void navigator.serviceWorker
+        .register("/sw.js", { updateViaCache: "none" })
+        .catch(() => undefined);
     };
     if (document.readyState === "complete") register();
     else window.addEventListener("load", register, { once: true });

@@ -8,6 +8,7 @@
     "start": "next start --hostname 127.0.0.1 --port 43127",
     "app": "node desktop/launch.mjs",
     "install-app": "node desktop/install-macos-app.mjs",
+    "bootstrap-macos": "bash desktop/bootstrap-macos.sh",
     "uninstall-app": "node desktop/install-macos-app.mjs --remove",
     "lint": "eslint"
   },

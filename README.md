@@ -25,11 +25,17 @@ Boards I already created live in that clone’s `data/project-hub.json`. I run t
 
 ## Run it like a Mac app
 
-Once, from the Project Hub folder:
+Once, from the Project Hub folder I actually use (on this Mac, `~/Desktop/Project-Hub`):
 
 ```bash
 npm install
 npm run install-app
+```
+
+If this clone does not have `install-app` yet:
+
+```bash
+bash desktop/bootstrap-macos.sh
 ```
 
 That writes **Project Hub** to `~/Applications`, starts the board with this Mac, and keeps it running at [http://127.0.0.1:43127](http://127.0.0.1:43127) after I close the window. Spotlight finds it. I can drag it to the Dock.
